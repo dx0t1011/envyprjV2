@@ -4,6 +4,11 @@
 **YouTube Data API v3**. Запускается локально, работает под одним аккаунтом Google,
 не является публичным сервисом.
 
+- Репозиторий: <https://github.com/dx0t1011/envyprjV2>
+- Сайт: <https://dx0t1011.github.io/envyprjV2/>
+- Политика конфиденциальности: <https://dx0t1011.github.io/envyprjV2/privacy.html>
+- Условия использования: <https://dx0t1011.github.io/envyprjV2/terms.html>
+
 Здесь же лежит сайт проекта — он нужен как публичные ссылки (home page / privacy policy /
 terms) для настройки OAuth-приложения в Google Cloud.
 
