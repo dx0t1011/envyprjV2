@@ -54,9 +54,20 @@ terms) для настройки OAuth-приложения в Google Cloud.
 ```
 https://www.googleapis.com/auth/youtube.upload
 https://www.googleapis.com/auth/youtube.readonly
+https://www.googleapis.com/auth/youtube.force-ssl
 ```
 
 → **Update** → **Save**. Лишние scopes удалить: всё, что не нужно, только усложняет проверку.
+
+Зачем третий. `youtube.upload` позволяет только **создать** видео и поставить обложку
+(`videos.insert`, `thumbnails.set`). Сменить приватность (`videos.update`), удалить видео
+(`videos.delete`) или править плейлисты им нельзя — нужен `youtube.force-ssl`. Без него команда
+`upload.py publish` падает с `403 Request had insufficient authentication scopes`, хотя `upload.py upload`
+при этом работает. `youtube.force-ssl` — тоже **sensitive**, не restricted: проверка приложения
+по-прежнему не требуется.
+
+Важно: набор scopes в коде (`upload.py`, константа `SCOPES`) и в консоли должен совпадать.
+Если добавить scope в код, но не в консоль, авторизация упадёт с `invalid_scope`.
 
 ### 1.4 OAuth-клиент
 
@@ -124,8 +135,10 @@ python upload.py list --limit 10
   и отсутствие страйков), картинка 1280×720, до 2 MB.
 - **Бренд-аккаунт.** Если на аккаунте несколько каналов, видео уйдёт в тот, что выбран на
   экране согласия Google. Проверка: `python upload.py channel` печатает название и ID.
-- **Квота.** По умолчанию 100 вызовов `videos.insert` в день. Для ручной/ежедневной
-  публикации достаточно.
+- **Квота.** 10 000 юнитов в сутки на проект. `videos.insert` стоит 1600 юнитов, то есть
+  **6 загрузок в день** (а не 100 — ранняя версия этой строки врала). `videos.delete` — 50,
+  `videos.list` / `channels.list` — по 1, `videos.update` — 50. Для ручной/ежедневной публикации
+  запаса хватает, но пакетная заливка десяти роликов за один день упрётся в лимит.
 - **Проверка Google** нужна только если пользователей станет больше 100 или понадобится
   убрать жёлтый экран предупреждения.
 

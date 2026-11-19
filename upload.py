@@ -20,6 +20,9 @@ from pathlib import Path
 SCOPES = [
     "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/youtube.readonly",
+    # нужен для videos.update (publish) и videos.delete: youtube.upload их не покрывает.
+    # Тот же набор должен быть включён в консоли (Data access), иначе будет invalid_scope.
+    "https://www.googleapis.com/auth/youtube.force-ssl",
 ]
 
 HERE = Path(__file__).resolve().parent
