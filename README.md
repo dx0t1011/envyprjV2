@@ -1,0 +1,130 @@
+# envyprjV2
+
+Личный инструмент для загрузки видео на собственный канал YouTube через официальный
+**YouTube Data API v3**. Запускается локально, работает под одним аккаунтом Google,
+не является публичным сервисом.
+
+Здесь же лежит сайт проекта — он нужен как публичные ссылки (home page / privacy policy /
+terms) для настройки OAuth-приложения в Google Cloud.
+
+| Страница | Файл |
+| --- | --- |
+| Главная | `index.html` |
+| Политика конфиденциальности | `privacy.html` |
+| Условия использования | `terms.html` |
+
+---
+
+## 1. Настройка Google Cloud (один раз)
+
+Полный чек-лист с точными полями. Проект: **envyprjV2**, аккаунт: **envyproject@gmail.com**.
+
+### 1.1 Включить API
+
+[console.cloud.google.com](https://console.cloud.google.com) → сверху выбрать проект `envyprjV2` →
+`APIs & Services` → `Library` → найти **YouTube Data API v3** → **Enable**.
+
+### 1.2 Branding
+
+[console.cloud.google.com/auth/branding](https://console.cloud.google.com/auth/branding)
+
+| Поле | Значение |
+| --- | --- |
+| App name | `envyprjV2` |
+| User support email | `envyproject@gmail.com` |
+| App logo | **не загружать** (включает отдельную проверку бренда) |
+| Application home page | ссылка на этот репозиторий или на GitHub Pages |
+| Application privacy policy link | `<Pages URL>/privacy.html` |
+| Application terms of service link | `<Pages URL>/terms.html` |
+| Authorized domains | `github.io` (или `github.com`, если ссылки на репозиторий) |
+| Developer contact email | `envyproject@gmail.com` |
+
+→ **Save**.
+
+### 1.3 Data access
+
+[console.cloud.google.com/auth/scopes](https://console.cloud.google.com/auth/scopes) →
+**Add or remove scopes** → в фильтр вставить по одному и отметить галочкой:
+
+```
+https://www.googleapis.com/auth/youtube.upload
+https://www.googleapis.com/auth/youtube.readonly
+```
+
+→ **Update** → **Save**. Лишние scopes удалить: всё, что не нужно, только усложняет проверку.
+
+### 1.4 OAuth-клиент
+
+[console.cloud.google.com/auth/clients](https://console.cloud.google.com/auth/clients) →
+**Create client** → Application type: **Desktop app** → имя `envyprjV2-desktop` → **Create** →
+**Download JSON** → положить файл рядом с `upload.py` **как `client_secret.json`**.
+
+### 1.5 Audience и публикация
+
+[console.cloud.google.com/auth/audience](https://console.cloud.google.com/auth/audience)
+
+1. **Test users** → **+ Add users** → `envyproject@gmail.com` → Save.
+2. **Publish app** → подтвердить. Статус станет **In production**, статус проверки —
+   «Needs verification»; для личного использования это нормально и игнорируется.
+
+После смены статуса **обязательно** переавторизоваться, иначе останется 7-дневный токен:
+[myaccount.google.com/permissions](https://myaccount.google.com/permissions) → удалить доступ
+`envyprjV2` → запустить `upload.py channel` заново.
+
+---
+
+## 2. Установка
+
+```bash
+cd envyprjV2
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Положить `client_secret.json` в корень проекта (он в `.gitignore`, в репозиторий не попадёт).
+
+## 3. Использование
+
+```bash
+# какой канал авторизован
+python upload.py channel
+
+# загрузить (по умолчанию — private, безопасный дефолт)
+python upload.py upload video.mp4 \
+  --title "Название" \
+  --description "Описание" \
+  --tags тег1 тег2 \
+  --category 27 \
+  --thumbnail cover.jpg
+
+# опубликовать позже
+python upload.py publish VIDEO_ID --privacy public
+
+# последние видео
+python upload.py list --limit 10
+```
+
+Первый запуск откроет браузер: войти под `envyproject@gmail.com`, **выбрать нужный канал**,
+нажать «Разрешить», пройти экран «Google не проверил приложение» → *Дополнительно* →
+*Перейти в envyprjV2 (небезопасно)*.
+
+Токен хранится в `~/.config/envyprjV2/token.json` с правами `600`.
+
+## 4. Что важно знать
+
+- **Приватность.** С 2 ноября 2026 дефолт YouTube API — `public`, если `privacyStatus`
+  не передан. Скрипт всегда передаёт явно и по умолчанию ставит `private`.
+- **Обложка.** `thumbnails.set` работает только на подтверждённом канале (нужен телефон
+  и отсутствие страйков), картинка 1280×720, до 2 MB.
+- **Бренд-аккаунт.** Если на аккаунте несколько каналов, видео уйдёт в тот, что выбран на
+  экране согласия Google. Проверка: `python upload.py channel` печатает название и ID.
+- **Квота.** По умолчанию 100 вызовов `videos.insert` в день. Для ручной/ежедневной
+  публикации достаточно.
+- **Проверка Google** нужна только если пользователей станет больше 100 или понадобится
+  убрать жёлтый экран предупреждения.
+
+## 5. Лицензия
+
+Код — для личного использования. Приложение использует YouTube API Services и подчиняется
+[Условиям использования YouTube API Services](https://developers.google.com/youtube/terms/api-services-terms-of-service).

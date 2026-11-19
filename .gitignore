@@ -1,0 +1,20 @@
+# секреты и токены — никогда не коммитим
+client_secret.json
+client_secrets.json
+token.json
+*.token.json
+.env
+
+# медиа
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.wav
+*.mp3
+
+# окружение
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
